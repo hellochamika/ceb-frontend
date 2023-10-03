@@ -2,6 +2,7 @@ import { LiaUserCircleSolid } from "react-icons/lia";
 import axios from "axios";
 import { useState } from "react";
 import Swal from "sweetalert2";
+import { ZodError, set, z } from "zod";
 
 interface AccountDetails {
   accountNumber: number;
@@ -16,22 +17,86 @@ function AddReading() {
   const [accountDetails, setAccountDetails] = useState<AccountDetails>();
   const [error, setError] = useState<string>("");
 
-  const [date, setDate] = useState<string>("");
-  const [newReading, setNewReading] = useState<string>("");
+  const [date, setDate] = useState<string>(
+    new Date().toISOString().slice(0, 10)
+  );
+  const [dateError, setDateError] = useState<string>("");
 
-  async function getMeterReadings(accountNumber: string) {
-    const response = await axios
-      .get(
-        "http://localhost:3000/api/v1/readings/account/" +
-          accountNumber +
-          "/last"
-      )
-      .then((response) => {
-        setAccountDetails(response.data.data);
-      })
-      .catch((error) => {
-        setError(error.response.data.message);
-      });
+  const [newReading, setNewReading] = useState<string>("");
+  const [newReadingError, setNewReadingError] = useState<string>("");
+
+  const zodSchema = z.number().min(10000001);
+
+  const validateInputValue = () => {
+    try {
+      zodSchema.parse(parseInt(accountNumber));
+      setError("");
+    } catch (error) {
+      setError("Invalid Account Number");
+      return false;
+    }
+
+    return true;
+  };
+
+  const selectedDateSchema = z.date();
+
+  const selectedReadingSchema = z
+    .number()
+    .min(accountDetails?.lastReading || 0);
+
+  const validateDate = (selectedDate: Date, givenDate: Date) => {
+    try {
+      selectedDateSchema.parse(selectedDate);
+
+      if (selectedDate < givenDate) {
+        setDateError("New reading date must be after the last reading date");
+        return false;
+      } else {
+        setDateError("");
+      }
+    } catch (error) {
+      setDateError("Invalid Date");
+      return false;
+    }
+    setDateError("");
+    return true;
+  };
+
+  const validateReading = (newReading: string, givenReading: number) => {
+    try {
+      selectedReadingSchema.parse(parseInt(newReading));
+    } catch (error) {
+      if (error instanceof ZodError && error.issues[0].code == "too_small") {
+        setNewReadingError(
+          "New reading must be greater than or equal the last reading"
+        );
+        return false;
+      } else {
+        setNewReadingError("Invalid Reading");
+        return false;
+      }
+    }
+    setNewReadingError("");
+    return true;
+  };
+
+  async function getMeterReadings() {
+    if (validateInputValue()) {
+      await axios
+        .get(
+          "http://localhost:3000/api/v1/readings/account/" +
+            accountNumber +
+            "/last"
+        )
+        .then((response) => {
+          setAccountDetails(response.data.data);
+          setNewReading(response.data.data.lastReading.toString());
+        })
+        .catch((error) => {
+          setError(error.response.data.message);
+        });
+    }
   }
 
   async function addMeterReading(
@@ -39,6 +104,14 @@ function AddReading() {
     date: string,
     newReading: number
   ) {
+    if (
+      !validateDate(new Date(date), new Date(accountDetails.lastReadingDate)) ||
+      !validateReading(newReading.toString(), accountDetails.lastReading)
+    ) {
+      Swal.fire("Failed!", "Invalid data. Please check data again!", "error");
+
+      return;
+    }
     var str =
       "Account Number  : " +
       accountDetails.accountNumber.toString().padEnd(10, " ") +
@@ -109,7 +182,7 @@ function AddReading() {
                   setAccountDetails(undefined);
                   e.preventDefault();
                   if (accountNumber) {
-                    getMeterReadings(accountNumber);
+                    getMeterReadings();
                   }
                 }}
               >
@@ -168,15 +241,22 @@ function AddReading() {
                   <label className="text-gray-800 font-bold">
                     Reading Date
                   </label>
-                  <div className="flex flex-row">
+                  <div className="flex flex-col items-center">
                     <input
                       type="date"
                       className="border border-gray-400 rounded-md w-[268px] p-2 m-2 text-center"
                       value={date}
                       onChange={(e) => {
                         setDate(e.target.value);
+                        validateDate(
+                          new Date(e.target.value),
+                          new Date(accountDetails.lastReadingDate)
+                        );
                       }}
                     />
+                    {dateError && (
+                      <p className="text text-red-600 text-sm">{dateError}</p>
+                    )}
                   </div>
                 </div>
 
@@ -190,14 +270,22 @@ function AddReading() {
                     value={newReading}
                     onChange={(e) => {
                       setNewReading(e.target.value);
+                      validateReading(
+                        e.target.value,
+                        accountDetails.lastReading
+                      );
                     }}
                   />
+                  {newReadingError && (
+                    <p className="text text-red-600 text-sm">
+                      {newReadingError}
+                    </p>
+                  )}
                 </div>
                 <div className="flex flex-col items-center">
                   <button
                     className="bg-yellow-500 my-3 hover:bg-yellow-600 text-gray-800 font-bold py-2 px-4 rounded-md"
-                    onClick={(e) => {
-                      e.preventDefault();
+                    onClick={() => {
                       addMeterReading(
                         accountDetails,
                         date,

@@ -1,7 +1,7 @@
 import { LiaUserCircleSolid } from "react-icons/lia";
 import axios from "axios";
 import { useState, useEffect } from "react";
-import Swal from "sweetalert2";
+import { z } from "zod";
 
 interface BillDetails {
   name: string;
@@ -27,8 +27,22 @@ function ViewBill() {
   const [billDetails, setBillDetails] = useState<BillDetails>();
   const [error, setError] = useState<string>("");
 
+  const zodSchema = z.number().min(10000001);
+
+  const validateInputValue = () => {
+    try {
+      zodSchema.parse(parseInt(accountNumber));
+      setError("");
+    } catch (error) {
+      setError("Invalid Account Number");
+      return false;
+    }
+
+    return true;
+  };
+
   async function getBillData(accountNumber: string) {
-    if (accountNumber) {
+    if (validateInputValue()) {
       await axios
         .get(
           "http://localhost:3000/api/v1/customers/account/" +
