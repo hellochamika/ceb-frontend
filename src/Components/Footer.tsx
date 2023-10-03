@@ -7,7 +7,7 @@ import {
 
 function Footer() {
   return (
-    <footer className="flex flex-col items-center pt-8 bg-zinc-700 text-center text-white">
+    <footer className="flex flex-col items-center pt-8 bg-zinc-700 text-center text-white absolute w-full h-28 bottom-0">
       <div className="container">
         <div className="flex flex-row gap-5 justify-center">
           <AiFillFacebook />

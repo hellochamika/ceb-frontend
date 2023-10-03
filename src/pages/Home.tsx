@@ -4,7 +4,7 @@ import NeedHelp from "../Sections/NeedHelp"
 
 function Home() {
   return (
-	<div>
+	<div className="pb-28">
 		<Hero />
 		<Features />
 		<NeedHelp />
