@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AiOutlineMenu, AiOutlineClose } from "react-icons/ai";
+import { Link } from "react-router-dom";
 
 function Navbar() {
   const [isNavOpened, setIsNavOpened] = useState(false);
@@ -16,16 +17,21 @@ function Navbar() {
               src="../../public/ceb-logo.png"
               alt="ceb-logo"
             />
-            <p className="font-bold"><span className="hidden md:flex">Ceylon Electricity Board</span>
-			<span className="flex md:hidden">CEB</span></p>
+            <p className="font-bold">
+              <span className="hidden md:flex">Ceylon Electricity Board</span>
+              <span className="flex md:hidden">CEB</span>
+            </p>
           </div>
           <div className="hidden lg:flex space-x-6 items-center ms-auto">
-            <a href="#" className="hover:text-blue-500">
+            <Link to="/" className="hover:text-blue-500">
               Home
-            </a>
-            <a href="#" className="hover:text-blue-500">
-              Get My Bill
-            </a>
+            </Link>
+            <Link to="/viewbill" className="hover:text-blue-500">
+              My Bill
+            </Link>
+            <Link to="/addreading" className="hover:text-blue-500">
+              Add Reading
+            </Link>
             <a href="#" className="hover:text-blue-500">
               Contact
             </a>
@@ -61,12 +67,15 @@ function Navbar() {
               : "absolute w-full top-[-100%]"
           }
         >
-          <a href="#" className="hover:text-blue-500">
+          <Link to="/" className="hover:text-blue-500">
             Home
-          </a>
-          <a href="#" className="hover:text-blue-500">
-            Get My Bill
-          </a>
+          </Link>
+          <Link to="/viewbill" className="hover:text-blue-500">
+            My Bill
+          </Link>
+          <Link to="/addreading" className="hover:text-blue-500">
+            Add Reading
+          </Link>
           <a href="#" className="hover:text-blue-500">
             Contact
           </a>
