@@ -1,8 +1,8 @@
-import { LiaUserCircleSolid } from "react-icons/lia";
-import axios from "axios";
 import { useState } from "react";
+import { LiaUserCircleSolid } from "react-icons/lia";
 import Swal from "sweetalert2";
-import { ZodError, set, z } from "zod";
+import { ZodError, z } from "zod";
+import axiosClient from "../axiosClient";
 
 interface AccountDetails {
   accountNumber: number;
@@ -13,6 +13,7 @@ interface AccountDetails {
 
 function AddReading() {
   const [accountNumber, setAccountNumber] = useState<string>("");
+  const [accountNumberError, setAccountNumberError] = useState<string>("");
 
   const [accountDetails, setAccountDetails] = useState<AccountDetails>();
   const [error, setError] = useState<string>("");
@@ -39,13 +40,34 @@ function AddReading() {
     return true;
   };
 
-  const selectedDateSchema = z.date();
+  const validateAccountNumber = (accountNumber: string) => {
+    const accountNumberSchema = z
+      .string()
+      .regex(/^\d{8}$/, { message: "Account number must be 8 digit number" })
+      .transform((value) => parseInt(value, 10))
+      .refine((value) => value >= 10000001, {
+        message: "Account number must be 8 digits",
+      })
+      .refine((value) => value <= 99999999, {
+        message: "Account number must be 8 digits",
+      });
 
-  const selectedReadingSchema = z
-    .number()
-    .min(accountDetails?.lastReading || 0);
+    try {
+      setAccountNumberError("");
+      if (!accountNumber) {
+        return accountNumberSchema.parse(accountNumber);
+      }
+    } catch (error) {
+      if (error instanceof ZodError) {
+        setAccountNumberError(error.issues[0].message);
+      }
+      return;
+    }
+  };
 
   const validateDate = (selectedDate: Date, givenDate: Date) => {
+    const selectedDateSchema = z.date();
+
     try {
       selectedDateSchema.parse(selectedDate);
 
@@ -64,6 +86,9 @@ function AddReading() {
   };
 
   const validateReading = (newReading: string, givenReading: number) => {
+    const selectedReadingSchema = z
+      .number()
+      .min(accountDetails?.lastReading || 0);
     try {
       selectedReadingSchema.parse(parseInt(newReading));
     } catch (error) {
@@ -83,7 +108,7 @@ function AddReading() {
 
   async function getMeterReadings() {
     if (validateInputValue()) {
-      await axios
+      axiosClient()
         .get(
           "http://localhost:3000/api/v1/readings/account/" +
             accountNumber +
@@ -132,8 +157,8 @@ function AddReading() {
       confirmButtonText: "Confirm, add it!",
     }).then((result) => {
       if (result.isConfirmed) {
-        axios
-          .post("http://localhost:3000/api/v1/readings", {
+        axiosClient()
+          .post("/readings", {
             accountNumber: accountDetails.accountNumber,
             readingDate: date,
             meterReading: newReading,
@@ -166,12 +191,21 @@ function AddReading() {
               <input
                 type="text"
                 name="accountNumber"
-                className="border border-gray-400 rounded-md w-sm p-2 m-2 text-center"
+                className={
+                  accountNumberError
+                    ? "border border-red-500 rounded-md w-sm p-2 m-2 text-center"
+                    : "border border-gray-400 rounded-md w-sm p-2 m-2 text-center"
+                }
                 placeholder="Enter Account Number"
                 value={accountNumber}
                 onChange={(e) => {
                   setAccountNumber(e.target.value);
+                  validateAccountNumber(e.target.value);
                   setError("");
+
+                  if (e.target.value.length == 0) {
+                    setAccountDetails(undefined);
+                  }
                 }}
               />
             </div>
@@ -189,6 +223,11 @@ function AddReading() {
                 Load User
               </button>
             </div>
+          </div>
+          <div className="flex flex-col items-center">
+            {accountNumberError && (
+              <p className="text text-red-600 text-sm">{accountNumberError}</p>
+            )}
           </div>
         </div>
 
@@ -244,7 +283,11 @@ function AddReading() {
                   <div className="flex flex-col items-center">
                     <input
                       type="date"
-                      className="border border-gray-400 rounded-md w-[268px] p-2 m-2 text-center"
+                      className={
+                        dateError
+                          ? "border border-red-600 rounded-md w-[268px] p-2 m-2 text-center"
+                          : "border border-gray-400 rounded-md w-[268px] p-2 m-2 text-center"
+                      }
                       value={date}
                       onChange={(e) => {
                         setDate(e.target.value);
@@ -266,7 +309,11 @@ function AddReading() {
                   </label>
                   <input
                     type="number"
-                    className="border border-gray-400 rounded-md w-sm p-2 m-2 text-center"
+                    className={
+                      newReadingError
+                        ? "border border-red-600 rounded-md w-sm p-2 m-2 text-center"
+                        : "border border-gray-400 rounded-md w-sm p-2 m-2 text-center"
+                    }
                     value={newReading}
                     onChange={(e) => {
                       setNewReading(e.target.value);

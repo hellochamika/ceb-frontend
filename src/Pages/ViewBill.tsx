@@ -1,7 +1,7 @@
+import { useEffect, useState } from "react";
 import { LiaUserCircleSolid } from "react-icons/lia";
-import axios from "axios";
-import { useState, useEffect } from "react";
 import { z } from "zod";
+import axiosClient from "../axiosClient";
 
 interface BillDetails {
   name: string;
@@ -12,6 +12,8 @@ interface BillDetails {
 
   previousMeterReading: number;
   previousMeterReadingDate: Date;
+
+  totalUnits: number;
 
   firstRangeCharge: number;
   secondRangeCharge: number;
@@ -27,9 +29,9 @@ function ViewBill() {
   const [billDetails, setBillDetails] = useState<BillDetails>();
   const [error, setError] = useState<string>("");
 
-  const zodSchema = z.number().min(10000001);
-
   const validateInputValue = () => {
+    const zodSchema = z.number().min(10000001);
+
     try {
       zodSchema.parse(parseInt(accountNumber));
       setError("");
@@ -43,18 +45,14 @@ function ViewBill() {
 
   async function getBillData(accountNumber: string) {
     if (validateInputValue()) {
-      await axios
-        .get(
-          "http://localhost:3000/api/v1/customers/account/" +
-            accountNumber +
-            "/bill"
-        )
+      axiosClient()
+        .get("/customers/account/" + accountNumber + "/bill")
         .then((response) => {
           setBillDetails(response.data.data);
         })
         .catch((error) => {
           if (error.response.status == 406) {
-            setError("Invalid Account Number");
+            setError("Incorrect Account Number");
           } else {
             setError(error.message);
             console.log(error);
@@ -212,7 +210,7 @@ function ViewBill() {
                       Total Units
                     </td>
                     <td className="border border-gray-300 px-1 md:px-4 py-2 text-right">
-                      not sent from backend
+                      {billDetails.totalUnits}
                     </td>
                   </tr>
                   <tr>

@@ -1,4 +1,7 @@
+import { useAuth } from "../Providers/AuthProvider";
+
 function Hero() {
+  const { token } = useAuth();
   return (
     <div className="bg-blue-400">
       <section>
@@ -10,14 +13,23 @@ function Hero() {
             <p className="text-white">
               Join the Digital Revolution with Ceylon Electricity Board
             </p>
-            <div className="max-w-md flex flex-col gap-2 pt-5">
-              <button className="text-blue-400 bg-white text-bold border p-1 rounded-full hover:bg-blue-300 hover:text-white">
-                Register
-              </button>
-              <button className="text-white text-bold border p-1 rounded-full hover:bg-blue-300">
-                Login
-              </button>
-            </div>
+
+            {!token ? (
+              <div className="max-w-md flex flex-col gap-2 pt-5">
+                <button className="text-blue-400 bg-white text-bold border p-1 rounded-full hover:bg-blue-300 hover:text-white">
+                  Register
+                </button>
+                <button className="text-white text-bold border p-1 rounded-full hover:bg-blue-300">
+                  Login
+                </button>
+              </div>
+            ) : (
+              <div className="max-w-md flex flex-col gap-2 pt-5">
+                <button className="text-white text-bold border p-1 rounded-full hover:bg-blue-300">
+                  Dashboard
+                </button>
+              </div>
+            )}
           </div>
           <div className="hidden md:flex md:flex-col items-center md:w-1/2">
             <img src="../../hero-image.png" alt="hero-img" width={300} />{" "}

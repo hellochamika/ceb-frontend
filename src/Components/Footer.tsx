@@ -1,8 +1,8 @@
 import {
   AiFillFacebook,
-  AiOutlineTwitter,
   AiFillInstagram,
-  AiOutlineGlobal
+  AiOutlineGlobal,
+  AiOutlineTwitter,
 } from "react-icons/ai";
 
 function Footer() {
@@ -13,7 +13,7 @@ function Footer() {
           <AiFillFacebook />
           <AiOutlineTwitter />
           <AiFillInstagram />
-		  <AiOutlineGlobal/>
+          <AiOutlineGlobal />
         </div>
       </div>
       <div className="w-full p-4 text-center text-white">
