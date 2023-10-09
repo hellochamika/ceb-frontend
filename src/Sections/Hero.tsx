@@ -1,4 +1,5 @@
 import { useAuth } from "../Providers/AuthProvider";
+import { Link } from "react-router-dom";
 
 function Hero() {
   const { token } = useAuth();
@@ -16,18 +17,27 @@ function Hero() {
 
             {!token ? (
               <div className="max-w-md flex flex-col gap-2 pt-5">
-                <button className="text-blue-400 bg-white text-bold border p-1 rounded-full hover:bg-blue-300 hover:text-white">
+                <Link
+                  to="/register"
+                  className="text-blue-400 bg-white text-bold text-center border p-1 rounded-full hover:bg-blue-300 hover:text-white"
+                >
                   Register
-                </button>
-                <button className="text-white text-bold border p-1 rounded-full hover:bg-blue-300">
+                </Link>
+                <Link
+                  to="/login"
+                  className="text-white text-bold text-center border p-1 rounded-full hover:bg-blue-300"
+                >
                   Login
-                </button>
+                </Link>
               </div>
             ) : (
               <div className="max-w-md flex flex-col gap-2 pt-5">
-                <button className="text-white text-bold border p-1 rounded-full hover:bg-blue-300">
+                <Link
+                  to="/dashboard"
+                  className="text-white text-bold text-center border p-1 rounded-full hover:bg-blue-300"
+                >
                   Dashboard
-                </button>
+                </Link>
               </div>
             )}
           </div>
