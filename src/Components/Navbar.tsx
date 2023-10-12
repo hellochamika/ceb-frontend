@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AiOutlineClose, AiOutlineMenu } from "react-icons/ai";
 import { Link } from "react-router-dom";
 import { useAuth } from "../Providers/AuthProvider";
+import DropDown from "./NavbarDropdown";
 
 function Navbar() {
   const [isNavOpened, setIsNavOpened] = useState(false);
@@ -16,7 +17,7 @@ function Navbar() {
   };
 
   return (
-    <div>
+    <div className=" bg-white shadow-md">
       <div className="relative container mx-auto">
         <div className="flex items-center justify-between p-6">
           <Link to={"/"}>
@@ -33,41 +34,38 @@ function Navbar() {
             </div>
           </Link>
           <div className="hidden lg:flex space-x-6 items-center ms-auto">
-            <Link to="/" className="hover:text-blue-500">
+            <Link to="/" className="hover:text-blue-700">
               Home
             </Link>
             {token && (
-              <Link to="/dashboard" className="hover:text-blue-500">
+              <Link to="/dashboard" className="hover:text-blue-700">
                 Dashboard
               </Link>
             )}
-            <Link to="/viewbill" className="hover:text-blue-500">
+            <Link to="/viewbill" className="hover:text-blue-700">
               My Bill
             </Link>
 
             {!token && (
               <>
-                <Link
-                  to="/login"
-                  className="px-4 py-1 text-white bg-blue-400 rounded-full hover:bg-blue-300"
-                >
+                <Link to="/login" className="hover:text-blue-700">
                   Login
+                </Link>
+                <Link
+                  to="/register"
+                  className="px-4 py-1 text-white bg-blue-900 rounded-full hover:bg-blue-700"
+                >
+                  Register
                 </Link>
               </>
             )}
 
             {token && (
               <>
-                <Link to="/addreading" className="hover:text-blue-500">
+                <Link to="/addreading" className="hover:text-blue-700">
                   Add Reading
                 </Link>
-                <Link
-                  to="/login"
-                  className="px-4 py-1 text-white bg-blue-400 rounded-full hover:bg-blue-300"
-                  onClick={handleLogout}
-                >
-                  Logout
-                </Link>
+                <DropDown />
               </>
             )}
           </div>
@@ -90,40 +88,76 @@ function Navbar() {
               : "absolute w-full top-[-100%]"
           }
         >
-          <Link to="/" className="hover:text-blue-500">
-            Home
-          </Link>
-          {token && (
-            <Link to="/dashboard" className="hover:text-blue-500">
-              Dashboard
+          <>
+            <Link to="/" className="hover:text-blue-700" onClick={handleNav}>
+              Home
             </Link>
-          )}
-          <Link to="/viewbill" className="hover:text-blue-500">
-            My Bill
-          </Link>
-
-          {!token && (
-            <>
-              <Link to="/login" className="hover:text-blue-500">
-                Login
-              </Link>
-            </>
-          )}
-
-          {token && (
-            <>
-              <Link to="/addreading" className="hover:text-blue-500">
-                Add Reading
-              </Link>
+            {token && (
               <Link
-                to="/login"
-                className="hover:text-blue-500"
-                onClick={handleLogout}
+                to="/dashboard"
+                className="hover:text-blue-700"
+                onClick={handleNav}
               >
-                Logout
+                Dashboard
               </Link>
-            </>
-          )}
+            )}
+            <Link
+              to="/viewbill"
+              className="hover:text-blue-700"
+              onClick={handleNav}
+            >
+              My Bill
+            </Link>
+
+            {!token && (
+              <>
+                <Link
+                  to="/login"
+                  className="hover:text-blue-700"
+                  onClick={handleNav}
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/register"
+                  className="hover:text-blue-700"
+                  onClick={handleNav}
+                >
+                  Register
+                </Link>
+              </>
+            )}
+
+            {token && (
+              <>
+                {" "}
+                <Link
+                  to="/addreading"
+                  className="hover:text-blue-700"
+                  onClick={handleNav}
+                >
+                  Add Reading
+                </Link>
+                <Link
+                  to="/profile"
+                  className="hover:text-blue-700"
+                  onClick={handleNav}
+                >
+                  Profile
+                </Link>
+                <Link
+                  to="/login"
+                  className="hover:text-blue-700"
+                  onClick={() => {
+                    handleLogout();
+                    handleNav();
+                  }}
+                >
+                  Logout
+                </Link>
+              </>
+            )}
+          </>
         </div>
       </div>
     </div>

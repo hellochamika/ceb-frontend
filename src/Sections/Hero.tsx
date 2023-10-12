@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 function Hero() {
   const { token } = useAuth();
   return (
-    <div className="bg-blue-400">
+    <div className="bg-blue-900">
       <section>
         <div className="container flex flex-col-reverse items-center px-6 mx-auto py-12 space-y-0 md:flex-row md:space-y-0">
           <div className="flex flex-col space-y-6 py-20 md:w-1/2 md:ps-10">
@@ -19,13 +19,13 @@ function Hero() {
               <div className="max-w-md flex flex-col gap-2 pt-5">
                 <Link
                   to="/register"
-                  className="text-blue-400 bg-white text-bold text-center border p-1 rounded-full hover:bg-blue-300 hover:text-white"
+                  className="text-blue-900 bg-white text-bold text-center border p-1 rounded-full hover:bg-blue-700 hover:text-white"
                 >
                   Register
                 </Link>
                 <Link
                   to="/login"
-                  className="text-white text-bold text-center border p-1 rounded-full hover:bg-blue-300"
+                  className="text-white text-bold text-center border p-1 rounded-full hover:bg-blue-700"
                 >
                   Login
                 </Link>
@@ -34,7 +34,7 @@ function Hero() {
               <div className="max-w-md flex flex-col gap-2 pt-5">
                 <Link
                   to="/dashboard"
-                  className="text-white text-bold text-center border p-1 rounded-full hover:bg-blue-300"
+                  className="text-white text-bold text-center border p-1 rounded-full hover:bg-blue-700"
                 >
                   Dashboard
                 </Link>

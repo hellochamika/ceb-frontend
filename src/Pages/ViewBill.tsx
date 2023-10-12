@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { LiaUserCircleSolid } from "react-icons/lia";
 import { z } from "zod";
-import axiosClient from "../axiosClient";
+import axiosClient from "../AxiosClient/axiosClient";
 
 interface BillDetails {
   name: string;
@@ -55,14 +55,13 @@ function ViewBill() {
             setError("Incorrect Account Number");
           } else {
             setError(error.message);
-            console.log(error);
           }
         });
     }
   }
 
   useEffect(() => {
-    if (billDetails && !billDetails.previousMeterReading) {
+    if (billDetails && !billDetails.previousMeterReadingDate) {
       setError("No adaquate data to generate bill");
     }
   }, [billDetails]);
@@ -71,7 +70,7 @@ function ViewBill() {
     <div className="pb-28 mx-auto">
       <div className="flex flex-col items-center mb-20 justify-center">
         <h1 className="text-4xl font-bold text-center text-gray-800 p-4">
-          View My Bill
+          My Bill
         </h1>
 
         <div>
@@ -91,7 +90,7 @@ function ViewBill() {
             </div>
             <div className="flex flex-col items-center">
               <button
-                className="bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-bold py-2 px-4 rounded-md"
+                className="bg-blue-900 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md"
                 onClick={(e) => {
                   getBillData(accountNumber);
                 }}
@@ -105,7 +104,7 @@ function ViewBill() {
         <>
           {billDetails && (
             <>
-              <div className="flex flex-col items-center justify-center md:flex-row md:gap-3 my-3 p-3 md:px-10 border border-gray-300 rounded-md cursor-pointer w-3/4 md:w-[640px]">
+              <div className="flex flex-col items-center justify-center md:flex-row md:gap-3 my-3 p-3 md:px-10 border bg-white border-gray-300 rounded-md cursor-pointer w-3/4 md:w-[640px]">
                 <div>
                   <LiaUserCircleSolid size={130} />
                 </div>
@@ -121,7 +120,7 @@ function ViewBill() {
                 </div>
               </div>
 
-              <div className="flex flex-col p-3 w-3/4 items-center mb-3 border border-gray-300 rounded-md md:flex-row md:justify-center md:w-[640px]">
+              <div className="flex flex-col p-3 w-3/4 items-center mb-3 border bg-white border-gray-300 rounded-md md:flex-row md:justify-center md:w-[640px]">
                 <div className="grow p-1 md:ms-4">
                   <h1 className="font-bold pb-1">Previous Reading</h1>
                   <table>
@@ -130,7 +129,7 @@ function ViewBill() {
                         <td>Reading</td>
                         <td>
                           :{" "}
-                          {billDetails.previousMeterReading
+                          {billDetails.previousMeterReading != null
                             ? billDetails.previousMeterReading
                             : "N/A"}
                         </td>
@@ -185,9 +184,9 @@ function ViewBill() {
           )}
 
           {billDetails && billDetails.totalCharge && (
-            <div className="flex flex-col p-3 w-3/4 mb-3 items-center border border-gray-300 rounded-md md:w-[640px]">
+            <div className="flex flex-col p-3 w-3/4 mb-3 items-center border bg-white border-gray-300 rounded-md md:w-[640px]">
               <h1 className="font-bold p-3">Bill Details</h1>
-              <table className="table-auto w-full sm:w-3/4">
+              <table className="table-auto w-full sm:w-3/4 mb-5">
                 <tbody>
                   <tr>
                     <td className="border border-gray-300 px-1 md:px-4 py-2">
@@ -260,7 +259,7 @@ function ViewBill() {
 
           {billDetails && (
             <button
-              className="bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-bold py-2 px-4 rounded-md"
+              className="bg-blue-900 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md"
               onClick={(e) => {
                 setBillDetails(undefined);
                 setError("");

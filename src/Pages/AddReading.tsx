@@ -2,7 +2,8 @@ import { useState } from "react";
 import { LiaUserCircleSolid } from "react-icons/lia";
 import Swal from "sweetalert2";
 import { ZodError, z } from "zod";
-import axiosClient from "../axiosClient";
+import axiosClient from "../AxiosClient/axiosClient";
+import { useAuth } from "../Providers/AuthProvider";
 
 interface AccountDetails {
   accountNumber: number;
@@ -12,6 +13,8 @@ interface AccountDetails {
 }
 
 function AddReading() {
+  const { user } = useAuth();
+
   const [accountNumber, setAccountNumber] = useState<string>("");
   const [accountNumberError, setAccountNumberError] = useState<string>("");
 
@@ -73,6 +76,9 @@ function AddReading() {
 
       if (selectedDate < givenDate) {
         setDateError("New reading date must be after the last reading date");
+        return false;
+      } else if (selectedDate > new Date()) {
+        setDateError("New reading date must not be a future date");
         return false;
       } else {
         setDateError("");
@@ -161,9 +167,9 @@ function AddReading() {
           .post("/readings", {
             accountNumber: accountDetails.accountNumber,
             readingDate: date,
-            meterReading: newReading,
+            meterReading: newReading || 0,
           })
-          .then((response) => {
+          .then(() => {
             Swal.fire("Added!", "New meter reading has been added.", "success");
             setAccountDetails(undefined);
             setAccountNumber("");
@@ -172,7 +178,6 @@ function AddReading() {
           })
           .catch((error) => {
             Swal.fire("Failed!", "An error occured. Please retry!", "error");
-            console.log(error);
           });
       }
     });
@@ -184,168 +189,183 @@ function AddReading() {
         <h1 className="text-4xl font-bold text-center text-gray-800 p-4">
           Add Reading
         </h1>
-
-        <div>
-          <div className="flex flex-col md:flex-row items-center">
-            <div className="flex flex-col items-center">
-              <input
-                type="text"
-                name="accountNumber"
-                className={
-                  accountNumberError
-                    ? "border border-red-500 rounded-md w-sm p-2 m-2 text-center"
-                    : "border border-gray-400 rounded-md w-sm p-2 m-2 text-center"
-                }
-                placeholder="Enter Account Number"
-                value={accountNumber}
-                onChange={(e) => {
-                  setAccountNumber(e.target.value);
-                  validateAccountNumber(e.target.value);
-                  setError("");
-
-                  if (e.target.value.length == 0) {
-                    setAccountDetails(undefined);
-                  }
-                }}
-              />
-            </div>
-            <div className="flex flex-col items-center">
-              <button
-                className="bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-bold py-2 px-4 rounded-md"
-                onClick={(e) => {
-                  setAccountDetails(undefined);
-                  e.preventDefault();
-                  if (accountNumber) {
-                    getMeterReadings();
-                  }
-                }}
-              >
-                Load User
-              </button>
-            </div>
-          </div>
-          <div className="flex flex-col items-center">
-            {accountNumberError && (
-              <p className="text text-red-600 text-sm">{accountNumberError}</p>
-            )}
-          </div>
-        </div>
-
-        {error && (
-          <div className="flex flex-col items-center justify-center md:flex-row md:gap-3 my-3 p-3 md:px-10 border border-red-300 rounded-md cursor-pointer w-3/4 md:w-[640px]">
-            <p className="text-red-600 text-2xl font-bold">{error}</p>
-          </div>
-        )}
-
-        {accountDetails && (
-          <>
-            <div className="flex flex-col items-center justify-center md:flex-row md:gap-3 my-3 p-3 md:px-10 border border-gray-300 rounded-md cursor-pointer w-3/4 md:w-[640px]">
-              <div>
-                <LiaUserCircleSolid size={130} />
-              </div>
-
-              <div className="flex flex-col gap-2 align-middle justify-center items-center md:items-start">
-                <p className="text-gray-800 text-2xl font-bold">
-                  {accountDetails.name}
-                </p>
-                <div className="flex flex-col items-center md:items-start">
-                  <p className="text-gray-800 font-bold">
-                    Account Number: {accountDetails.accountNumber}
-                  </p>
-                  <p className="text-gray-800 font-bold">Last meter reading:</p>
-                  <div className="flex flex-col md:flex-row gap-x-4 text-center md:text-left">
-                    <p className="text-gray-800">
-                      Date:{" "}
-                      {accountDetails.lastReadingDate
-                        ? accountDetails.lastReadingDate.substring(0, 10)
-                        : "N/A"}
-                    </p>
-                    <p className="text-gray-800">
-                      Reading:{" "}
-                      {accountDetails.lastReading
-                        ? accountDetails.lastReading
-                        : "N/A"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-col items-center justify-center gap-3 my-2 p-1 md:px-10 border border-gray-300 rounded-md cursor-pointer w-3/4 md:w-[640px]">
-              <h1 className="text-2xl font-bold text-center text-gray-800 pt-2">
-                New Reading
-              </h1>
-              <div className="flex flex-col items-center w-full">
-                <div className="flex flex-col items-center w-full">
-                  <label className="text-gray-800 font-bold">
-                    Reading Date
-                  </label>
-                  <div className="flex flex-col items-center">
-                    <input
-                      type="date"
-                      className={
-                        dateError
-                          ? "border border-red-600 rounded-md w-[268px] p-2 m-2 text-center"
-                          : "border border-gray-400 rounded-md w-[268px] p-2 m-2 text-center"
-                      }
-                      value={date}
-                      onChange={(e) => {
-                        setDate(e.target.value);
-                        validateDate(
-                          new Date(e.target.value),
-                          new Date(accountDetails.lastReadingDate)
-                        );
-                      }}
-                    />
-                    {dateError && (
-                      <p className="text text-red-600 text-sm">{dateError}</p>
-                    )}
-                  </div>
-                </div>
-
+        {user.isApproved ? (
+          <div className="flex flex-col items-center mb-20 justify-center">
+            <div>
+              <div className="flex flex-col md:flex-row items-center">
                 <div className="flex flex-col items-center">
-                  <label className="text-gray-800 font-bold">
-                    Meter Reading
-                  </label>
                   <input
-                    type="number"
+                    type="text"
+                    name="accountNumber"
                     className={
-                      newReadingError
-                        ? "border border-red-600 rounded-md w-sm p-2 m-2 text-center"
+                      accountNumberError
+                        ? "border border-red-500 rounded-md w-sm p-2 m-2 text-center"
                         : "border border-gray-400 rounded-md w-sm p-2 m-2 text-center"
                     }
-                    value={newReading}
+                    placeholder="Enter Account Number"
+                    value={accountNumber}
                     onChange={(e) => {
-                      setNewReading(e.target.value);
-                      validateReading(
-                        e.target.value,
-                        accountDetails.lastReading
-                      );
+                      setAccountNumber(e.target.value);
+                      validateAccountNumber(e.target.value);
+                      setError("");
+
+                      if (e.target.value.length == 0) {
+                        setAccountDetails(undefined);
+                      }
                     }}
                   />
-                  {newReadingError && (
-                    <p className="text text-red-600 text-sm">
-                      {newReadingError}
-                    </p>
-                  )}
                 </div>
                 <div className="flex flex-col items-center">
                   <button
-                    className="bg-yellow-500 my-3 hover:bg-yellow-600 text-gray-800 font-bold py-2 px-4 rounded-md"
-                    onClick={() => {
-                      addMeterReading(
-                        accountDetails,
-                        date,
-                        parseInt(newReading)
-                      );
+                    className="bg-blue-900 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md"
+                    onClick={(e) => {
+                      setAccountDetails(undefined);
+                      e.preventDefault();
+                      if (accountNumber) {
+                        getMeterReadings();
+                      }
                     }}
                   >
-                    Add Reading
+                    Load User
                   </button>
                 </div>
               </div>
+              <div className="flex flex-col items-center">
+                {accountNumberError && (
+                  <p className="text text-red-600 text-sm">
+                    {accountNumberError}
+                  </p>
+                )}
+              </div>
             </div>
-          </>
+
+            {error && (
+              <div className="flex flex-col items-center justify-center md:flex-row md:gap-3 my-3 p-3 md:px-10 border border-red-300 rounded-md cursor-pointer w-3/4 md:w-[640px]">
+                <p className="text-red-600 text-2xl font-bold">{error}</p>
+              </div>
+            )}
+
+            {accountDetails && (
+              <>
+                <div className="flex flex-col items-center justify-center md:flex-row md:gap-3 my-3 p-3 md:px-10 bg-white border border-gray-300 rounded-md cursor-pointer w-3/4 md:w-[640px]">
+                  <div>
+                    <LiaUserCircleSolid size={130} />
+                  </div>
+
+                  <div className="flex flex-col gap-2 align-middle justify-center items-center md:items-start">
+                    <p className="text-gray-800 text-2xl font-bold">
+                      {accountDetails.name}
+                    </p>
+                    <div className="flex flex-col items-center md:items-start">
+                      <p className="text-gray-800 font-bold">
+                        Account Number: {accountDetails.accountNumber}
+                      </p>
+                      <p className="text-gray-800 font-bold">
+                        Last meter reading:
+                      </p>
+                      <div className="flex flex-col md:flex-row gap-x-4 text-center md:text-left">
+                        <p className="text-gray-800">
+                          Date:{" "}
+                          {accountDetails.lastReadingDate
+                            ? accountDetails.lastReadingDate.substring(0, 10)
+                            : "N/A"}
+                        </p>
+                        <p className="text-gray-800">
+                          Reading:{" "}
+                          {accountDetails.lastReading != null
+                            ? accountDetails.lastReading
+                            : "N/A"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-center justify-center gap-3 my-2 p-1 md:px-10 bg-white border border-gray-300 rounded-md cursor-pointer w-3/4 md:w-[640px]">
+                  <h1 className="text-2xl font-bold text-center text-gray-800 pt-2">
+                    New Reading
+                  </h1>
+                  <div className="flex flex-col items-center w-full">
+                    <div className="flex flex-col items-center w-full">
+                      <label className="text-gray-800 font-bold">
+                        Reading Date
+                      </label>
+                      <div className="flex flex-col items-center">
+                        <input
+                          type="date"
+                          className={
+                            dateError
+                              ? "border border-red-600 rounded-md w-[268px] p-2 m-2 text-center"
+                              : "border border-gray-400 rounded-md w-[268px] p-2 m-2 text-center"
+                          }
+                          value={date}
+                          onChange={(e) => {
+                            setDate(e.target.value);
+                            validateDate(
+                              new Date(e.target.value),
+                              new Date(accountDetails.lastReadingDate)
+                            );
+                          }}
+                        />
+                        {dateError && (
+                          <p className="text text-red-600 text-sm">
+                            {dateError}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col items-center">
+                      <label className="text-gray-800 font-bold">
+                        Meter Reading
+                      </label>
+                      <input
+                        type="number"
+                        className={
+                          newReadingError
+                            ? "border border-red-600 rounded-md w-sm p-2 m-2 text-center"
+                            : "border border-gray-400 rounded-md w-sm p-2 m-2 text-center"
+                        }
+                        value={newReading}
+                        onChange={(e) => {
+                          setNewReading(e.target.value);
+                          validateReading(
+                            e.target.value,
+                            accountDetails.lastReading
+                          );
+                        }}
+                      />
+                      {newReadingError && (
+                        <p className="text text-red-600 text-sm">
+                          {newReadingError}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <button
+                        className="bg-blue-900 my-3 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md"
+                        onClick={() => {
+                          addMeterReading(
+                            accountDetails,
+                            date,
+                            parseInt(newReading)
+                          );
+                        }}
+                      >
+                        Add Reading
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center md:flex-row md:gap-3 my-3 p-3 md:px-10 border border-red-300 rounded-md cursor-pointer w-3/4 md:w-[640px]">
+            <p className="text-red-600 text-center text-2xl font-bold">
+              You cannot add meter reading until your account is approved!
+            </p>
+          </div>
         )}
       </div>
     </div>

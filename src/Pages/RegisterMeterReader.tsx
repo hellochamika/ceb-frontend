@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { ZodType, z } from "zod";
 import { useAuth } from "../Providers/AuthProvider";
-import axiosClient from "../axiosClient";
+import axiosClient from "../AxiosClient/axiosClient";
 
 type FormData = {
   firstName: string;
@@ -54,10 +54,9 @@ function RegisterMeterReader() {
           title: "Success",
           text: "Successfully registered",
         });
-		navigate("/dashboard");
+        navigate("/dashboard");
       })
       .catch((error) => {
-        console.log(error);
         Swal.fire({
           icon: "error",
           title: "Oops...",
@@ -68,8 +67,11 @@ function RegisterMeterReader() {
 
   return (
     <div className="conntainer flex flex-col items-center">
-      <h1 className="text-3xl">Register</h1>
-      <form className="flex flex-col m-5" onSubmit={handleSubmit(handleRegister)}>
+      <h1 className="text-4xl font-bold text-center text-gray-800 p-4">Register</h1>
+      <form
+        className="flex flex-col m-5"
+        onSubmit={handleSubmit(handleRegister)}
+      >
         <input
           className="border border-gray-400 m-1 p-2 rounded"
           type="text"
@@ -119,7 +121,7 @@ function RegisterMeterReader() {
         </div>
 
         <input
-          className="border border-gray-400 m-1 p-2 rounded bg-slate-300 text-center cursor-pointer"
+          className="bg-blue-900 hover:bg-blue-700 text-white font-bold m-1 py-2 px-4 rounded-md"
           value={"Register"}
           type="submit"
         />

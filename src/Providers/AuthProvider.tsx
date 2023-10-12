@@ -1,16 +1,19 @@
 import React, { ReactNode, createContext, useState } from "react";
 
-interface user {
+export interface User {
   id: number;
   firstName: string;
   lastName: string;
+  isApproved: boolean;
+  isAdmin: boolean;
+  email: string;
 }
 
 interface AuthContextProps {
   token: string;
   setToken: (data: string) => void;
-  email: string;
-  setEmail: (data: string) => void;
+  user: User;
+  setUser: (data: User) => void;
 }
 
 const AuthContext = createContext<AuthContextProps>({} as AuthContextProps);
@@ -24,10 +27,10 @@ function AuthProvider({ children }: { children: ReactNode }) {
     _setToken(data);
   };
 
-  const [email, setEmail] = useState<string>("");
+  const [user, setUser] = useState<User>({} as User);
 
   return (
-    <AuthContext.Provider value={{ token, setToken, email, setEmail }}>
+    <AuthContext.Provider value={{ token, setToken, user, setUser }}>
       {children}
     </AuthContext.Provider>
   );
